@@ -6,6 +6,22 @@ OAuth is used for authentication of users, with Google oauth.
 
 ## Development
 
+#### Database
+
+To create a new migration run:
+
+```bash
+npx drizzle-kit generate
+```
+
+To apply the migrations run:
+
+```bash
+npx drizzle-kit migrate
+```
+
+#### Server
+
 To start the development server run:
 
 ```bash
