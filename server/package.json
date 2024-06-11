@@ -7,10 +7,18 @@
     "prod": "bun src/index.ts"
   },
   "dependencies": {
-    "elysia": "latest"
+    "dotenv": "^16.4.5",
+    "drizzle-kit": "^0.22.7",
+    "elysia": "latest",
+    "@libsql/client": "^0.6.2",
+    "drizzle-orm": "^0.31.2"
   },
   "devDependencies": {
     "bun-types": "latest"
   },
-  "module": "src/index.js"
+  "module": "src/index.js",
+  "type": "module",
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
 }
