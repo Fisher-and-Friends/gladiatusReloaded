@@ -6,10 +6,10 @@ import { UserCreationError } from '../errors/userCreation.error';
 export async function create(data: InsertUser) {
   try {
     await db.insert(usersTable).values(data);
-  } catch (e: any) {
-    console.error(e);
+  } catch (error: any) {
+    console.error(error);
 
-    const message = e.message.split(': ');
+    const message = error.message.split(': ');
     console.log(message);
     console.log(message[2]);
     let details = {};

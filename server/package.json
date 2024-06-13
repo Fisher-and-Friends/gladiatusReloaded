@@ -7,8 +7,10 @@
     "prod": "bun src/index.ts"
   },
   "dependencies": {
+    "@elysiajs/jwt": "^1.0.2",
     "@libsql/client": "^0.6.2",
     "arctic": "^1.9.1",
+    "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",
     "drizzle-kit": "^0.22.7",
     "drizzle-orm": "^0.31.2",
