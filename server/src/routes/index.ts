@@ -1,6 +1,7 @@
 import Elysia from 'elysia';
 import { userRoutes } from './user.routes';
 import { APIError } from '../errors/apiError.error';
+import { authRoutes } from './auth.routes';
 
 const routes = new Elysia()
   .get('/', () => 'UP')
@@ -15,6 +16,7 @@ const routes = new Elysia()
         };
     }
   })
+  .use(authRoutes)
   .use(userRoutes);
 
 export { routes };
