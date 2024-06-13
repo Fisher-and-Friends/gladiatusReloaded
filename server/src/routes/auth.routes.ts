@@ -13,6 +13,8 @@ const GOOGLE_CLIENT_SECRET = getEnv('GOOGLE_CLIENT_SECRET', 'string');
 const GOOGLE_REDIRECT_URL = getEnv('GOOGLE_REDIRECT_URL', 'string');
 const APP_URL = getEnv('APP_URL', 'string');
 const JWT_SECRET = getEnv('JWT_SECRET', 'string');
+const JWT_AUTH_TTL = getEnv('JWT_AUTH_TTL', 'number');
+const JWT_REFRESH_TTL = getEnv('JWT_REFRESH_TTL', 'number');
 
 const authRoutes = new Elysia()
   .use(nocache)
@@ -43,8 +45,10 @@ const authRoutes = new Elysia()
         familyName: family_name,
       };
 
-      cookie.authToken.set(await createCookie(jwt.sign, user, 1));
-      cookie.refreshToken.set(await createCookie(jwt.sign, user, 240));
+      cookie.authToken.set(await createCookie(jwt.sign, user, JWT_AUTH_TTL));
+      cookie.refreshToken.set(
+        await createCookie(jwt.sign, user, JWT_REFRESH_TTL)
+      );
     } catch (error) {
       console.error(error);
       throw new AuthError('Failed to authenticate.');
