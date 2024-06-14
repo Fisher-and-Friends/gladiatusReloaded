@@ -2,6 +2,7 @@ import Elysia from 'elysia';
 import { userRoutes } from './user.routes';
 import { APIError } from '../errors/apiError.error';
 import { authRoutes } from './auth.routes';
+import { authGuard } from '../middlewares/authGuard';
 
 const routes = new Elysia()
   .get('/', () => 'UP')
@@ -17,6 +18,6 @@ const routes = new Elysia()
     }
   })
   .use(authRoutes)
-  .use(userRoutes);
+  .group('/api', (app) => app.use(authGuard).use(userRoutes));
 
 export { routes };

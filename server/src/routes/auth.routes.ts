@@ -9,6 +9,7 @@ import { createCookie, decodeJWT } from '../utils/jwt';
 import { GoogleUserInfo } from '../interfaces/googleUserInfo.interface';
 import dayjs from 'dayjs';
 import * as userService from '../services/user.service';
+import { authGuard } from '../middlewares/authGuard';
 
 const GOOGLE_CLIENT_ID = getEnv('GOOGLE_CLIENT_ID', 'string');
 const GOOGLE_CLIENT_SECRET = getEnv('GOOGLE_CLIENT_SECRET', 'string');
@@ -68,12 +69,15 @@ const authRoutes = new Elysia()
   })
   .post(
     '/auth/refresh',
-    async ({ cookie, jwt, body }) => {
+    async ({ cookie, jwt }) => {
+      if (!cookie.refreshToken.value) {
+        throw new AuthError('Missing refresh token.');
+      }
       // TODO: no any
-      const token = (await jwt.verify(body.refreshToken)) as any;
+      const token = (await jwt.verify(cookie.refreshToken.value)) as any;
 
       if (token?.expires < dayjs().unix()) {
-        throw new AuthError('Refresh token expired.');
+        throw new AuthError('Refresh token invalid.');
       }
 
       const id = token.id;
