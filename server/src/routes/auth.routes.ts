@@ -71,13 +71,17 @@ const authRoutes = new Elysia()
     async ({ cookie, jwt, body }) => {
       // TODO: no any
       const token = (await jwt.verify(body.refreshToken)) as any;
+
       if (token?.expires < dayjs().unix()) {
         throw new AuthError('Refresh token expired.');
       }
-      console.log(token);
-      const id = token.id;
 
-      // cookie.authToken.set(await createCookie(jwt.sign, user, JWT_AUTH_TTL));
+      const id = token.id;
+      let user: User = await userService.getById(id);
+      cookie.authToken.set(await createCookie(jwt.sign, user, JWT_AUTH_TTL));
+      cookie.refreshToken.set(
+        await createCookie(jwt.sign, { id }, JWT_REFRESH_TTL)
+      );
     },
     {
       body: t.Object({
