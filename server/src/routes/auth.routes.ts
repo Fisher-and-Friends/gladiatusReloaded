@@ -1,4 +1,4 @@
-import Elysia from 'elysia';
+import Elysia, { t } from 'elysia';
 import { oauth2 } from 'elysia-oauth2';
 import { getEnv } from '../utils/env';
 import { nocache } from '../middlewares/nocache';
@@ -7,6 +7,8 @@ import { jwt } from '@elysiajs/jwt';
 import { User } from '../interfaces/user.interface';
 import { createCookie, decodeJWT } from '../utils/jwt';
 import { GoogleUserInfo } from '../interfaces/googleUserInfo.interface';
+import dayjs from 'dayjs';
+import * as userService from '../services/user.service';
 
 const GOOGLE_CLIENT_ID = getEnv('GOOGLE_CLIENT_ID', 'string');
 const GOOGLE_CLIENT_SECRET = getEnv('GOOGLE_CLIENT_SECRET', 'string');
@@ -45,9 +47,17 @@ const authRoutes = new Elysia()
         familyName: family_name,
       };
 
-      cookie.authToken.set(await createCookie(jwt.sign, user, JWT_AUTH_TTL));
+      let existingUser: User = await userService.getByEmail(email);
+
+      if (!existingUser) {
+        existingUser = { ...user, id: await userService.create(user) };
+      }
+
+      cookie.authToken.set(
+        await createCookie(jwt.sign, existingUser, JWT_AUTH_TTL)
+      );
       cookie.refreshToken.set(
-        await createCookie(jwt.sign, user, JWT_REFRESH_TTL)
+        await createCookie(jwt.sign, { id: existingUser.id }, JWT_REFRESH_TTL)
       );
     } catch (error) {
       console.error(error);
@@ -55,6 +65,25 @@ const authRoutes = new Elysia()
     }
 
     return redirect(APP_URL);
-  });
+  })
+  .post(
+    '/auth/refresh',
+    async ({ cookie, jwt, body }) => {
+      // TODO: no any
+      const token = (await jwt.verify(body.refreshToken)) as any;
+      if (token?.expires < dayjs().unix()) {
+        throw new AuthError('Refresh token expired.');
+      }
+      console.log(token);
+      const id = token.id;
+
+      // cookie.authToken.set(await createCookie(jwt.sign, user, JWT_AUTH_TTL));
+    },
+    {
+      body: t.Object({
+        refreshToken: t.String(),
+      }),
+    }
+  );
 
 export { authRoutes };
