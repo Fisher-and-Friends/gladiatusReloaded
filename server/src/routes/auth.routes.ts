@@ -67,7 +67,7 @@ const authRoutes = new Elysia()
 
     return redirect(APP_URL);
   })
-  .post(
+  .get(
     '/auth/refresh',
     async ({ cookie, jwt }) => {
       if (!cookie.refreshToken.value) {
