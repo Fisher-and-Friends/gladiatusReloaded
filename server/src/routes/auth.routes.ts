@@ -67,31 +67,23 @@ const authRoutes = new Elysia()
 
     return redirect(APP_URL);
   })
-  .get(
-    '/auth/refresh',
-    async ({ cookie, jwt }) => {
-      if (!cookie.refreshToken.value) {
-        throw new AuthError('Missing refresh token.');
-      }
-      // TODO: no any
-      const token = (await jwt.verify(cookie.refreshToken.value)) as any;
-
-      if (token?.expires < dayjs().unix()) {
-        throw new AuthError('Refresh token invalid.');
-      }
-
-      const id = token.id;
-      let user: User = await userService.getById(id);
-      cookie.authToken.set(await createCookie(jwt.sign, user, JWT_AUTH_TTL));
-      cookie.refreshToken.set(
-        await createCookie(jwt.sign, { id }, JWT_REFRESH_TTL)
-      );
-    },
-    {
-      body: t.Object({
-        refreshToken: t.String(),
-      }),
+  .get('/auth/refresh', async ({ cookie, jwt }) => {
+    if (!cookie.refreshToken.value) {
+      throw new AuthError('Missing refresh token.');
     }
-  );
+    // TODO: no any
+    const token = (await jwt.verify(cookie.refreshToken.value)) as any;
+
+    if (token?.expires < dayjs().unix()) {
+      throw new AuthError('Refresh token invalid.');
+    }
+
+    const id = token.id;
+    let user: User = await userService.getById(id);
+    cookie.authToken.set(await createCookie(jwt.sign, user, JWT_AUTH_TTL));
+    cookie.refreshToken.set(
+      await createCookie(jwt.sign, { id }, JWT_REFRESH_TTL)
+    );
+  });
 
 export { authRoutes };
