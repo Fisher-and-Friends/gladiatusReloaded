@@ -1,4 +1,4 @@
-import Elysia, { t } from 'elysia';
+import Elysia from 'elysia';
 import { oauth2 } from 'elysia-oauth2';
 import { getEnv } from '../utils/env';
 import { nocache } from '../middlewares/nocache';
@@ -9,7 +9,6 @@ import { createCookie, decodeJWT } from '../utils/jwt';
 import { GoogleUserInfo } from '../interfaces/googleUserInfo.interface';
 import dayjs from 'dayjs';
 import * as userService from '../services/user.service';
-import { authGuard } from '../middlewares/authGuard';
 
 const GOOGLE_CLIENT_ID = getEnv('GOOGLE_CLIENT_ID', 'string');
 const GOOGLE_CLIENT_SECRET = getEnv('GOOGLE_CLIENT_SECRET', 'string');
@@ -32,58 +31,88 @@ const authRoutes = new Elysia()
       Google: [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URL],
     })
   )
-  .get('/auth/google', ({ oauth2 }) =>
-    oauth2.redirect('Google', { scopes: ['email', 'profile'] })
+  .get(
+    '/auth/google',
+    ({ oauth2 }) => oauth2.redirect('Google', { scopes: ['email', 'profile'] }),
+    {
+      detail: {
+        description: `Redirects to the google OAuth screen.  
+        Should be called if the user needs to authenticate to the app.  
+        It does not return anything, it only redirects the user.`,
+        tags: ['auth', 'public'],
+      },
+    }
   )
-  .get('/auth/google/callback', async ({ oauth2, redirect, jwt, cookie }) => {
-    try {
-      const token = await oauth2.authorize('Google');
-      const { email, picture, given_name, family_name } =
-        decodeJWT<GoogleUserInfo>(token.idToken);
+  .get(
+    '/auth/google/callback',
+    async ({ oauth2, redirect, jwt, cookie }) => {
+      try {
+        const token = await oauth2.authorize('Google');
+        const { email, picture, given_name, family_name } =
+          decodeJWT<GoogleUserInfo>(token.idToken);
 
-      const user: User = {
-        email: email,
-        picture: picture,
-        givenName: given_name,
-        familyName: family_name,
-      };
+        const user: User = {
+          email: email,
+          picture: picture,
+          givenName: given_name,
+          familyName: family_name,
+        };
 
-      let existingUser: User = await userService.getByEmail(email);
+        let existingUser: User = await userService.getByEmail(email);
 
-      if (!existingUser) {
-        existingUser = { ...user, id: await userService.create(user) };
+        if (!existingUser) {
+          existingUser = { ...user, id: await userService.create(user) };
+        }
+
+        cookie.authToken.set(
+          await createCookie(jwt.sign, existingUser, JWT_AUTH_TTL)
+        );
+        cookie.refreshToken.set(
+          await createCookie(jwt.sign, { id: existingUser.id }, JWT_REFRESH_TTL)
+        );
+      } catch (error) {
+        console.error(error);
+        throw new AuthError('Failed to authenticate.');
       }
 
-      cookie.authToken.set(
-        await createCookie(jwt.sign, existingUser, JWT_AUTH_TTL)
-      );
+      return redirect(APP_URL);
+    },
+    {
+      detail: {
+        description: `Used only by the OAuth provider to finalize the login flow.  
+        Should not be used manually or by the interface.`,
+        tags: ['auth'],
+      },
+    }
+  )
+  .get(
+    '/auth/refresh',
+    async ({ cookie, jwt }) => {
+      if (!cookie.refreshToken.value) {
+        throw new AuthError('Missing refresh token.');
+      }
+      // TODO: no any
+      const token = (await jwt.verify(cookie.refreshToken.value)) as any;
+
+      if (token?.expires < dayjs().unix()) {
+        throw new AuthError('Refresh token invalid.');
+      }
+
+      const id = token.id;
+      let user: User = await userService.getById(id);
+      cookie.authToken.set(await createCookie(jwt.sign, user, JWT_AUTH_TTL));
       cookie.refreshToken.set(
-        await createCookie(jwt.sign, { id: existingUser.id }, JWT_REFRESH_TTL)
+        await createCookie(jwt.sign, { id }, JWT_REFRESH_TTL)
       );
-    } catch (error) {
-      console.error(error);
-      throw new AuthError('Failed to authenticate.');
+    },
+    {
+      detail: {
+        description: `Calling this endpoint with a valid \`refreshToken\` cookie,  
+        sets the \`refreshToken\` and \`authToken\` cookies to updated values.  
+        Should be called periodically by an active interface to ensure \`authToken\` validity.`,
+        tags: ['auth'],
+      },
     }
-
-    return redirect(APP_URL);
-  })
-  .get('/auth/refresh', async ({ cookie, jwt }) => {
-    if (!cookie.refreshToken.value) {
-      throw new AuthError('Missing refresh token.');
-    }
-    // TODO: no any
-    const token = (await jwt.verify(cookie.refreshToken.value)) as any;
-
-    if (token?.expires < dayjs().unix()) {
-      throw new AuthError('Refresh token invalid.');
-    }
-
-    const id = token.id;
-    let user: User = await userService.getById(id);
-    cookie.authToken.set(await createCookie(jwt.sign, user, JWT_AUTH_TTL));
-    cookie.refreshToken.set(
-      await createCookie(jwt.sign, { id }, JWT_REFRESH_TTL)
-    );
-  });
+  );
 
 export { authRoutes };

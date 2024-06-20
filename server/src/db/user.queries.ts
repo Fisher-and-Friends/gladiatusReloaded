@@ -4,9 +4,9 @@ import { SelectUser, usersTable, InsertUser } from './schema';
 import { UserCreationError } from '../errors/userCreation.error';
 import { User } from '../interfaces/user.interface';
 
-export async function create(data: InsertUser): Promise<number> {
+export async function create(data: InsertUser): Promise<string> {
   try {
-    return +(await db.insert(usersTable).values(data)).toJSON().lastInsertRowid;
+    return (await db.insert(usersTable).values(data)).toJSON().lastInsertRowid;
   } catch (error: any) {
     console.error(error);
 

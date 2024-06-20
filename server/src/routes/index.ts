@@ -5,7 +5,12 @@ import { authRoutes } from './auth.routes';
 import { authGuard } from '../middlewares/authGuard';
 
 const routes = new Elysia()
-  .get('/', () => 'UP')
+  .get('/', () => 'UP', {
+    detail: {
+      description: `Healthcheck that returns "UP" if all is good.`,
+      tags: ['public'],
+    },
+  })
   .error('API_ERROR', APIError)
   .onError(({ code, error, set }) => {
     switch (code) {
