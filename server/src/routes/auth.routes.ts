@@ -94,7 +94,7 @@ const authRoutes = new Elysia()
       // TODO: no any
       const token = (await jwt.verify(cookie.refreshToken.value)) as any;
 
-      if (token?.expires < dayjs().unix()) {
+      if (!token?.expires || token?.expires < dayjs().unix()) {
         throw new AuthError('Refresh token invalid.');
       }
 
