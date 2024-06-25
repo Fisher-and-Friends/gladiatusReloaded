@@ -6,7 +6,9 @@ export const charactersTable = sqliteTable('characters', {
   id: text('id', { length: 36 })
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  userId: text('user_id').references(() => usersTable.id),
+  userId: text('user_id')
+    .references(() => usersTable.id)
+    .notNull(),
   armourId: text('armour').references(() => equipmentsTable.id),
   leggingsId: text('leggings').references(() => equipmentsTable.id),
   helmetId: text('helmet').references(() => equipmentsTable.id),
@@ -16,13 +18,15 @@ export const charactersTable = sqliteTable('characters', {
   weaponId: text('weapon').references(() => equipmentsTable.id),
   amuletId: text('amulet').references(() => equipmentsTable.id),
   name: text('name').unique().notNull(),
-  strength: integer('strength').default(1),
-  dexterity: integer('dexterity').default(1),
-  agility: integer('agility').default(1),
-  constitution: integer('constitution').default(1),
-  intelligence: integer('intelligence').default(1),
-  health: integer('health').default(50),
-  level: integer('level').default(1),
-  experience: integer('experience').default(0),
-  money: integer('money').default(0),
+  strength: integer('strength').notNull().default(1),
+  dexterity: integer('dexterity').notNull().default(1),
+  agility: integer('agility').notNull().default(1),
+  constitution: integer('constitution').notNull().default(1),
+  intelligence: integer('intelligence').notNull().default(1),
+  health: integer('health').notNull().default(50),
+  level: integer('level').notNull().default(1),
+  experience: integer('experience').notNull().default(0),
+  money: integer('money').notNull().default(0),
 });
+
+export type SelectCharacter = typeof charactersTable.$inferSelect;
