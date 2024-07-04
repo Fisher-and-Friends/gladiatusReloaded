@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b1a2103e-1caf-4491-8924-6a13b4eadf16",
+  "id": "9b269a33-6f26-424c-a828-699bbf53c41b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "users": {
@@ -70,7 +70,7 @@
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "armour": {
@@ -140,7 +140,7 @@
           "name": "strength",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": 1
         },
@@ -148,7 +148,7 @@
           "name": "dexterity",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": 1
         },
@@ -156,7 +156,7 @@
           "name": "agility",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": 1
         },
@@ -164,7 +164,7 @@
           "name": "constitution",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": 1
         },
@@ -172,7 +172,7 @@
           "name": "intelligence",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": 1
         },
@@ -180,7 +180,7 @@
           "name": "health",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": 50
         },
@@ -188,7 +188,7 @@
           "name": "level",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": 1
         },
@@ -196,7 +196,7 @@
           "name": "experience",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": 0
         },
@@ -204,12 +204,19 @@
           "name": "money",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
           "default": 0
         }
       },
       "indexes": {
+        "characters_user_id_unique": {
+          "name": "characters_user_id_unique",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": true
+        },
         "characters_name_unique": {
           "name": "characters_name_unique",
           "columns": [

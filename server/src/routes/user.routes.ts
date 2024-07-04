@@ -7,7 +7,7 @@ const userRoutes = new Elysia().group('/user', (app) =>
     params: t.Object({
       id: t.String(),
     }),
-    response: UserSchema,
+    response: t.Nullable(UserSchema),
     detail: {
       description: `Returns the user details for a given user id.  
       DEPRECATED: will be removed in future builds, since it is already in the \`authToken\`.`,

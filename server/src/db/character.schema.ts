@@ -8,7 +8,8 @@ export const charactersTable = sqliteTable('characters', {
     .$defaultFn(() => crypto.randomUUID()),
   userId: text('user_id')
     .references(() => usersTable.id)
-    .notNull(),
+    .notNull()
+    .unique(),
   armourId: text('armour').references(() => equipmentsTable.id),
   leggingsId: text('leggings').references(() => equipmentsTable.id),
   helmetId: text('helmet').references(() => equipmentsTable.id),
